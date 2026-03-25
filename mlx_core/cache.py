@@ -128,6 +128,31 @@ class TurboQuantKVCache:
         ret_k = mx.concatenate(k, axis=2) if k else mx.array([])
         ret_v = mx.concatenate(v, axis=2) if v else mx.array([])
         return ret_k, ret_v
+        
+    @property
+    def memory_size(self):
+        """Возвращает точное потребление памяти этого кэша (в байтах)."""
+        total_bytes = 0
+        
+        # Буферы и Sink (uncompressed, fp16 = 2 bytes per float)
+        for t in [self.sink_keys, self.sink_values, self.key_buffer, self.value_buffer]:
+            if t is not None:
+                total_bytes += t.size * 2
+                
+        # Сжатые чанками (асимметричные данные)
+        for comp, _ in self.compressed_keys_chunks:
+            total_bytes += comp["pq_data"]["r_quant"].size * comp["pq_data"]["r_quant"].dtype.size
+            total_bytes += comp["pq_data"]["theta_quant"].size * comp["pq_data"]["theta_quant"].dtype.size
+            if "qjl_data" in comp:
+                # 1 bit (упакованный в uint8) = 1 byte per 8 logical bits
+                total_bytes += comp["qjl_data"].size * 1 
+                total_bytes += comp["qjl_norm"].size * 2
+                
+        for comp, _ in self.compressed_values_chunks:
+            total_bytes += comp["pq_data"]["r_quant"].size * comp["pq_data"]["r_quant"].dtype.size
+            total_bytes += comp["pq_data"]["theta_quant"].size * comp["pq_data"]["theta_quant"].dtype.size
+            
+        return total_bytes
 
 def apply_turboquant_cache(model=None, bits: int = 3, qjl_features: int = 2048, fp16_sink_size: int = 128):
     """
@@ -151,5 +176,15 @@ def apply_turboquant_cache(model=None, bits: int = 3, qjl_features: int = 2048, 
             )
 
     cache_module.KVCache = PatchedCache
+    
+    # Также перехватываем функцию фабрики, если модель обходит класс
+    if hasattr(cache_module, 'make_prompt_cache'):
+        _original_make = cache_module.make_prompt_cache
+        def patched_make_prompt_cache(model, max_kv_size=None):
+            if hasattr(model, "make_cache"):
+                return model.make_cache()
+            return [PatchedCache(head_dim=l.head_dim, n_kv_heads=getattr(l, "n_kv_heads", l.n_heads)) for l in model.layers]
+        cache_module.make_prompt_cache = patched_make_prompt_cache
+
     print(f"[TurboQuant] Глобальный патч установлен: mlx_lm.models.cache.KVCache подменен.")
     print(f"[TurboQuant] Настройки: {bits} бит/кэш, Attention Sink (Системный Промпт в FP16): первые {fp16_sink_size} токенов.")
