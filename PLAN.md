@@ -1,33 +1,25 @@
-# Детальный План: TurboQuant на Apple MLX
+# TurboQuant-MLX Development Plan
 
-Этот план описывает шаги по созданию прототипа, а затем рабочей версии сверхстепеничного алгоритмента сжатия TurboQuant (включая QJL и PolarQuant) для Mac M4 (Apple MLX).
+## Phase 1: Mathematical Foundation (Pure Python / NumPy)
+- [x] Unbiased rounding logic
+- [x] QJL (Quantized Johnson-Lindenstrauss) concept
+- [x] PolarQuant concept
+- [x] Base accuracy tests via simulated Attention output
 
-## Фаза 1: Ресёрч и математика (Дни 1-2)
-**Цель:** Понять формулы из статей Google Research, перевести их в псевдокод на пальцах.
-- [ ] Изучить статью **Quantized Johnson-Lindenstrauss (QJL)** [arXiv:2406.03482].
-  - Понять механизм однобитного квантования (sign-bit) и восстановление скалярного произведения (attention score).
-  - Сформировать формулы проекции расстояний.
-- [ ] Изучить статью **PolarQuant** [arXiv:2502.02617].
-  - Разобрать рекурсивный переход из Декартовых координат в полярные (угол + радиус).
-  - Алгоритм избавления от нормализации (устранение памяти под константы квантования).
-- [ ] Изучить статью **TurboQuant** [arXiv:2504.19874].
-  - Понять, как объединены QJL (сжатие остатка 1 битом) и PolarQuant (основная компрессия углов).
+## Phase 2: Implementation (Apple MLX Framework)
+- [x] Core structures ported to `mlx.core`
+- [x] Asymmetric integration via Monkey-patching `mlx-lm`
+- [x] Memory tests checking strict allocation maps
 
-## Фаза 2: Pure Python / NumPy Прототип (Дни 3-5)
-**Цель:** Написать алгоритм на чистом NumPy (максимально просто), чтобы он сжимал "игрушечные" векторы и проверял математику без завязки на железо.
-- [ ] Реализовать `core/qjl.py`: функция сжатия (компрессор), функция оценки Dot Product (оценщик). Провести тесты на 10-100 мерных векторах.
-- [ ] Реализовать `core/polarquant.py`: рекурсивный переход в полярные системы (на парах координат).
-- [ ] Реализовать `core/turboquant.py`: конвейер Полная компрессия (ротация -> полярное сжатие -> извлечение ошибки -> QJL на ошибку).
-- [ ] Написать юнит-тесты в `tests/test_math.py`. Проверить искажение скалярного произведения (Dot Product distortion).
+## Phase 3: Hardware Verification
+- [x] Performance benchmarking (NumPy vs Metal execution time)
 
-## Фаза 3: Портирование на MLX (Apple Silicon M4) (Дни 6-10)
-**Цель:** Переписать матричные операции с NumPy на Apple `mlx-core`, чтобы заставить это работать на GPU и процессоре Metal.
-- [ ] Переписать QJL тензорные операции на `mlx.core` (MLX Array).
-- [ ] Сделать пакетную обработку пакетов данных. Оптимизировать PolarQuant (так как рекурсивная трансформация может быть медленной, если не распараллелить).
-- [ ] Написать бенчмарк: сравнить скорость сжатия (NumPy vs MLX GPU).
+## Phase 4: Productionization & Deployment
+- [x] Structured package (`pyproject.toml`)
+- [x] Attention sinks (FP16 uncompressed pre-fills)
+- [x] `run_server.py` implementation mapping OpenAI endpoints
+- [x] EXO integration scripts for decentralized Mac networks
 
-## Фаза 4: Интеграция в LLM (KV Cache) (Опционально / Будущее)
-**Цель:** Внедрить наш TurboQuant-MLX алгоритм напрямую в кэш генерации простейшей модели (например, Gemma 2 или Llama 3).
-- [ ] Изучить структуру хранения кэша в `mlx-lm` (Apple MLX Examples).
-- [ ] Подменить хранение флоатов KV-кэша на наш класс компрессора (хранит 3-битные данные, разжимает на лету).
-- [ ] Замерить потребление Unified RAM на длинных промптах "Needle In A Haystack".
+## Phase 5: Community Release
+- [x] Internationalization (English format globally applied)
+- [ ] Receive pull requests and model-specific tuning 
