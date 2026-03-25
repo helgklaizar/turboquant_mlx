@@ -49,3 +49,6 @@ python scripts/run_server.py --model mlx-community/Meta-Llama-3-8B-Instruct-4bit
 Мы провели симуляцию размера кэша ключей/значений в LLM на 32K токенов и сравнили `numpy (CPU)` из `core/` и `mlx (Metal)` из `mlx_core/`.
 Отклонение (MSE) при 5-битах: `0.0048`. MLX Metal GPU версии в **2.8х** быстрее при компрессии векторных блоков.
 RoPE (Rotary Embeddings) поддерживается нативно (вращение происходит до компрессии). Асимметричное сжатие (TurboQuant для Keys, PolarQuant для Values) ускоряет генерацию еще на 10%.
+
+## Благодарности / Acknowledgements
+Огромное спасибо репозиторию **[DeadByDawn101/turboquant-mlx](https://github.com/DeadByDawn101/turboquant-mlx)** за архитектурное вдохновение для этого проекта. Идеи по интеграции с кластером EXO, патчингу внутренностей `make_prompt_cache` в `mlx_lm`, а также строгий трекинг памяти в байтах были адаптированы в нашу кодовую базу благодаря их невероятной работе!
