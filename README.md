@@ -117,16 +117,16 @@ Special shout-out to **[TheTom/turboquant_plus](https://github.com/TheTom/turboq
 
 This initiative is a suite of high-performance tools natively optimized for Apple Silicon (MLX).
 
-- [🚀 **TurboQuant-MLX**](https://github.com/helgklaizar/turboquant-mlx) — Флагман: сжатие ОЗУ до 5 раз.
-- [⚒️ **Forge-MLX**](https://github.com/helgklaizar/forge-mlx) — Фреймворк для оптимизации.
-- [🏎️ **Liger-Kernel-MLX**](https://github.com/helgklaizar/liger-kernel-mlx) — Высокопроизводительные Metal кернелы.
+- [🌿 **ECO-MLX**](https://github.com/helgklaizar/eco-mlx) — **Flagship**: Smart Hub and orchestrator.
+- [🚀 **TurboQuant-MLX**](https://github.com/helgklaizar/turboquant-mlx) — RAM compression up to 5x.
+- [⚒️ **Forge-MLX**](https://github.com/helgklaizar/forge-mlx) — Optimization framework.
+- [🏎️ **Liger-Kernel-MLX**](https://github.com/helgklaizar/liger-kernel-mlx) — High-performance Metal kernels.
 - [🔳 **BitNet-MLX**](https://github.com/helgklaizar/bitnet-mlx) — Native Ternary (1.58-bit) Kernels.
-- [⚡️ **Flash-Attention-MLX**](https://github.com/helgklaizar/flash-attention-mlx) — Ядерная база для FA3 на Metal.
-- [🌉 **CUDA-Bridge-MLX**](https://github.com/helgklaizar/cuda-bridge-mlx) — Мокинг CUDA под мак.
-- [🗂️ **Paged-Attention-MLX**](https://github.com/helgklaizar/paged-attention-mlx) — Управление KV-кешем.
-- [🧬 **Evol-KV-MLX**](https://github.com/helgklaizar/evol-kv-mlx) — Эволюционный отбор токенов.
-- [💧 **H2O-MLX**](https://github.com/helgklaizar/h2o-mlx) — Реализация алгоритма Heavy-Hitter Oracle.
-- [📡 **KVTC-MLX**](https://github.com/helgklaizar/kvtc-mlx) — Transform Coding для KV-кеша.
-- [🚀 **Rocket-KV-MLX**](https://github.com/helgklaizar/rocket-kv-mlx) — Реализация "ракетного" прунинга.
-- [🌿 **Sage-Attention-MLX**](https://github.com/helgklaizar/sage-attention-mlx) — Ускорение внимания.
-- [🧬 **Attention-Matching-MLX**](https://github.com/helgklaizar/attention-matching-mlx) — Механизм Attention Matching.
+- [⚡️ **Flash-Attention-MLX**](https://github.com/helgklaizar/flash-attention-mlx) — FA3 on Metal foundation.
+- [🌉 **CUDA-Bridge-MLX**](https://github.com/helgklaizar/cuda-bridge-mlx) — CUDA mocking for Mac.
+- [🗂️ **Paged-Attention-MLX**](https://github.com/helgklaizar/paged-attention-mlx) — KV-cache management.
+- [🧬 **Evol-KV-MLX**](https://github.com/helgklaizar/evol-kv-mlx) — Evolutionary token selection.
+- [💧 **H2O-MLX**](https://github.com/helgklaizar/h2o-mlx) — Heavy-Hitter Oracle.
+- [📡 **KVTC-MLX**](https://github.com/helgklaizar/kvtc-mlx) — Transform Coding for KV-cache.
+- [🚀 **Rocket-KV-MLX**](https://github.com/helgklaizar/rocket-kv-mlx) — "Rocket" pruning implementation.
+- [🌿 **Sage-Attention-MLX**](https://github.com/helgklaizar/sage-attention-mlx) — Attention acceleration.
