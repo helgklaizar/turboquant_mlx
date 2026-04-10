@@ -17,5 +17,4 @@ dependencies = [
 dev = ["pytest"]
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["core", "mlx_core", "core.*", "mlx_core.*"]
+where = ["src"]
