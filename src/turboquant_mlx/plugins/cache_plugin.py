@@ -1,3 +1,4 @@
+import math
 import mlx.core as mx
 
 class TurboQuantKVCache:
@@ -63,7 +64,7 @@ class TurboQuantKVCache:
             self.compress_k = self.k_theta_bits < 16
             self.compress_v = self.v_theta_bits < 16
             
-            from core.polarquant import PolarQuantCompressor
+            from turboquant_mlx.polarquant import PolarQuantCompressor
             if self.compress_k:
                 self.k_compressor = PolarQuantCompressor(
                     feature_dim=head_dim, 
@@ -102,13 +103,17 @@ class TurboQuantKVCache:
         self._lazy_init(head_dim=d, n_kv_heads=h)
         
         prev_offset = self.offset
-        self.offset += keys.shape[2]
+        self.offset += s
         
-        # 1. Логика Attention Sink (или Boundary Layers)
-        if prev_offset < self.fp16_sink_size:
-            remaining_sink = self.fp16_sink_size - prev_offset
-            
-            # Забираем токены, которые влезают в Sink
+        # 1. Логика Attention Sink (или Boundary Layers) — slice indices must be int
+        if not math.isfinite(self.fp16_sink_size):
+            remaining_sink = s
+        elif prev_offset < self.fp16_sink_size:
+            remaining_sink = int(min(max(self.fp16_sink_size - prev_offset, 0), s))
+        else:
+            remaining_sink = 0
+
+        if remaining_sink > 0:
             k_sink_part = keys[:, :, :remaining_sink, :]
             v_sink_part = values[:, :, :remaining_sink, :]
             
@@ -220,6 +225,58 @@ class TurboQuantKVCache:
         ret_k = mx.concatenate(k, axis=2) if k else mx.array([])
         ret_v = mx.concatenate(v, axis=2) if v else mx.array([])
         return ret_k, ret_v
+
+    @state.setter
+    def state(self, v):
+        self.keys, self.values = v
+        if self.keys is not None and hasattr(self.keys, "shape") and len(self.keys.shape) >= 3 and self.keys.size > 0:
+            self.offset = int(self.keys.shape[2])
+            self.sink_keys = self.keys
+            self.sink_values = self.values
+            self.compressed_keys_chunks = []
+            self.compressed_values_chunks = []
+            self.uncompressed_keys_chunks = []
+            self.uncompressed_values_chunks = []
+            self.key_buffer = None
+            self.value_buffer = None
+        else:
+            self.offset = 0
+
+    @property
+    def meta_state(self):
+        return ""
+
+    @meta_state.setter
+    def meta_state(self, v):
+        if v is not None and v:
+            raise ValueError("This cache has no meta_state but a meta_state was set.")
+
+    def size(self):
+        return self.offset
+
+    def empty(self):
+        return self.offset == 0 and self.sink_keys is None and self.key_buffer is None
+
+    @property
+    def nbytes(self):
+        return self.memory_size
+
+    def is_trimmable(self):
+        return True
+
+    def trim(self, n):
+        n = min(self.offset, n)
+        self.offset -= n
+        return n
+
+    def make_mask(self, *args, **kwargs):
+        from mlx_lm.models.cache import create_attention_mask
+        return create_attention_mask(*args, offset=self.offset, **kwargs)
+
+    @classmethod
+    def merge(cls, caches):
+        from mlx_lm.models.cache import BatchKVCache
+        return BatchKVCache.merge(caches)
         
     @property
     def memory_size(self):
@@ -248,7 +305,7 @@ def apply_turboquant_cache(model=None, k_theta_bits: int = 8, k_radius_bits: int
         return
         
     class PatchedCache(TurboQuantKVCache):
-        def __init__(self, head_dim: int, n_kv_heads: int, is_boundary: bool = False, **kwargs):
+        def __init__(self, head_dim: int = 0, n_kv_heads: int = 0, is_boundary: bool = False, **kwargs):
             super().__init__(
                 head_dim=head_dim, 
                 n_kv_heads=n_kv_heads, 
@@ -266,7 +323,12 @@ def apply_turboquant_cache(model=None, k_theta_bits: int = 8, k_radius_bits: int
         _original_make = cache_module.make_prompt_cache
         def patched_make_prompt_cache(model, max_kv_size=None):
             if hasattr(model, "make_cache"):
-                return model.make_cache()
+                caches = model.make_cache()
+                tq = [c for c in caches if isinstance(c, PatchedCache)]
+                for i, c in enumerate(tq):
+                    if i < 2 or i >= len(tq) - 2:
+                        c.is_boundary = True
+                return caches
             
             caches = []
             num_layers = len(model.layers)

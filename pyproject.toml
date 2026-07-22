@@ -10,6 +10,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
     "mlx>=0.14.0",
+    "mlx-lm",
     "numpy"
 ]
 

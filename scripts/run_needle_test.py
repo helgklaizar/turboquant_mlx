@@ -1,6 +1,6 @@
 import mlx.core as mx
 from mlx_lm import load, generate
-from mlx_core.cache import apply_turboquant_cache
+from turboquant_mlx.plugins.cache_plugin import apply_turboquant_cache
 import traceback
 
 def main():
@@ -20,7 +20,7 @@ def main():
             model, tokenizer = load(model_name)
             
             # Внедрение компрессии с системным префиксом 64 токена
-            apply_turboquant_cache(model, bits=3, fp16_sink_size=64)
+            apply_turboquant_cache(model, k_theta_bits=8, v_theta_bits=3, fp16_sink_size=64)
             
             # Внедрение SSD-стриминга весов (Layer-by-Layer Evaluation)
             import types
