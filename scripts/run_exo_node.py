@@ -17,10 +17,10 @@ import sys
 import os
 
 try:
-    from mlx_core.cache import apply_turboquant_cache
+    from turboquant_mlx.plugins.cache_plugin import apply_turboquant_cache
     
-    # Перехват и внедрение (Сжатие в 3 бита, 128 токенов в оригинале для сохранения инструкций)
-    apply_turboquant_cache(bits=3, fp16_sink_size=128)
+    # Перехват и внедрение (K=8 / V=3 бита, 128 токенов в оригинале для сохранения инструкций)
+    apply_turboquant_cache(k_theta_bits=8, v_theta_bits=3, fp16_sink_size=128)
     
     print("✅ [EXO-Targeted] Пул TurboQuant поднят.")
     print("   Теперь любая распределенная генерация в Exo (на базе MLX) будет жрать на 70% меньше памяти под KV Кэш.")
