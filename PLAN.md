@@ -23,3 +23,12 @@
 ## Phase 5: Community Release
 - [x] Internationalization (English format globally applied)
 - [ ] Receive pull requests and model-specific tuning 
+
+## Phase 6: TurboMic (iPhone client)
+- [x] `run_assistant_server.py` — structured `/v1/analyze` endpoint over the patched cache
+- [x] SwiftUI app scaffold: single-button UI, on-device transcription, session storage
+- [x] Two capture modes (button / realtime) behind one analysis pipeline
+- [ ] First device build: signing, on-device recognition check
+- [ ] `OnDeviceAnalyzer` via MLX Swift (Llama 3.2 1B / Qwen 2.5 1.5B)
+- [ ] Port `PolarQuantCompressor` to MLX Swift and validate against the Python reference
+- [ ] Migrate to `SpeechAnalyzer` (iOS 26) to drop recognition-task rotation

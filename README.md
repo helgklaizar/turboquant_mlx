@@ -104,6 +104,29 @@ python scripts/run_server.py --model mlx-community/Meta-Llama-3-8B-Instruct-4bit
 # API Base URL: http://localhost:8080/v1
 ```
 
+## 📱 TurboMic — the iPhone client
+
+`ios/` holds **TurboMic**, a SwiftUI app built around a single large button: tap it,
+talk, and a local model pulls out the tasks, decisions and facts — dropping the rest.
+It runs in two modes: **Button** (analyse once on stop) and **Realtime** (analyse a
+rolling window while you keep talking).
+
+Audio capture and speech-to-text stay on the phone. Only the transcript text reaches
+your Mac, where `run_assistant_server.py` serves it with the TurboQuant cache patch
+applied — which is what makes a long realtime session affordable, since a growing
+transcript is almost entirely KV cache.
+
+```bash
+# Mac
+python scripts/run_assistant_server.py --model mlx-community/Meta-Llama-3-8B-Instruct-4bit
+
+# iPhone
+cd ios && xcodegen generate && open TurboMic.xcodeproj
+```
+
+Architecture, iOS background-audio constraints and the roadmap for moving inference
+fully on-device (PolarQuant → MLX Swift) are in [`docs/ios_app.md`](docs/ios_app.md).
+
 ## 🤝 Acknowledgements
 
 Massive thanks to **[DeadByDawn101/turboquant-mlx](https://github.com/DeadByDawn101/turboquant-mlx)** for architectural inspiration (Exo cluster integration, deep monkey-patching arrays).
